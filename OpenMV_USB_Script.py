@@ -1,3 +1,6 @@
+### Written by Simon Wong while working at BLINC Lab. 
+### May 28, 2025. 
+
 import sensor
 import pyb
 import struct
@@ -15,8 +18,10 @@ while True:
         pyb.LED(2).on()
         if cmd == "snap":
             img = sensor.snapshot()
+
+            # Add additional image processing code here... 
+
             buffer = img.compress(quality=90).bytearray()
             usb.write(struct.pack("<L", len(buffer)))
-            usb.write(buffer)
-           
+            usb.write(buffer)          
 
