@@ -60,13 +60,9 @@ def capture_and_display(sp, count):
     cv2.imshow('OpenMV H7 Camera', img)
     key = cv2.waitKey(1) # Necessary for OpenCV event loop to refresh display window. 
 
-start = time.time()
 for count in range(NUM_IMAGES): 
     capture_and_display(serial_port, count)
-    if cv2.waitKey(1) & 0xFF == ord('q'): # Press Q while inside OpenCV window to end script prematurely. 
+    if cv2.waitKey(1) & 0xFF == 27: # Press escape key while inside OpenCV window to end script prematurely. 
         break
-end = time.time()
-framerate = NUM_IMAGES / (end - start)
-print(f'Average framerate: {framerate:.2f}')
 cv2.destroyAllWindows()
 
