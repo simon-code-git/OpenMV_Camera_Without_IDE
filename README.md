@@ -11,5 +11,5 @@ Using these scripts, you can capture images and video on your Windows PC from an
 ## Running the scripts on your PC
 1. Make sure the pyserial and OpenCV libraries are both installed in your Python Environment. 
 2. Open `Capture_Single_Image.py` or `Capture_Video.py` or `Stream_Video.py` in a code editor or terminal.
-3. Look in the Windows Device Manager for the OpebCV camera listed as "USB Serial Device (COM#)". Enter "COM#" as the value of `PORT`.
+3. Look in the Windows Device Manager for the OpenCV camera listed as "USB Serial Device (COM#)". Enter "COM#" as the value of `PORT`.
 4. Create a folder for images to be stored in the same working directory as the scripts. Enter the path as the value of `PATH`. 
