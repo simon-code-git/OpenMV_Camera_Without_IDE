@@ -1,5 +1,5 @@
 ### Created by Simon Wong while working at BLINC Lab. 
-### May 28, 2025. 
+### Updated May 28, 2025. 
 
 import os
 import serial
