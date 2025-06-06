@@ -1,5 +1,5 @@
 ### Created by Simon Wong while working at BLINC Lab. 
-### June 4, 2025. 
+### Updated June 6, 2025. 
 
 import os
 import serial
@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 PORT = 'COM5' # Look for "USB Serial Device (COM#)" in Windows Device Manager. Make sure OpenMV IDE is NOT running. 
-PATH = '/Users/Simon Wong/Desktop/OpenMV/Video_Images' # Folder must already be made for script to work. 
+PATH = '/Users/Simon Wong/Desktop/OpenMV/Screenshots' # Folder must already be made for script to work. 
 NUM_IMAGES = 1000000
 
 serial_port = serial.Serial(PORT, 
@@ -41,7 +41,7 @@ def capture_and_display(sp, count):
     current_time = time.time()
     elapsed = current_time - prev_time
     if elapsed > 0:
-        fps = 1 / elapsed
+        fps = 1 / elapsed 
     prev_time = current_time
     resolution_text = f'Resolution: {img.shape[1]}x{img.shape[0]}'
     fps_text = f'FPS: {fps:.2f}'
@@ -60,9 +60,13 @@ def capture_and_display(sp, count):
     cv2.imshow('OpenMV H7 Camera', img)
     key = cv2.waitKey(1) # Necessary for OpenCV event loop to refresh display window. 
 
+    if key == 32:  # Press space bar to save screenshot to folder specified by PATH. 
+        filename = os.path.join(PATH, f"Screenshot_{count}.png")
+        cv2.imwrite(filename, img)
+        print(f"Saved screenshot: {filename}")
+
 for count in range(NUM_IMAGES): 
     capture_and_display(serial_port, count)
     if cv2.waitKey(1) & 0xFF == 27: # Press escape key while inside OpenCV window to end script prematurely. 
         break
 cv2.destroyAllWindows()
-
