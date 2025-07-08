@@ -70,7 +70,7 @@ class CameraStream:
             return max(rgb, key=rgb.get)
     
     def detect_shapes(self, draw_on_img=True): 
-    # Function for detecting/identifying shapes (triangles, squares, circles). 
+    # Function for detecting/identifying shapes (triangles, rectangles, circles). 
         grayed = cv.cvtColor(self.img, cv.COLOR_BGR2GRAY) # Convert to grayscale for Canny edge algorithm. 
         blurred = cv.GaussianBlur(grayed, (5, 5), 0) # Use Gaussian blur to reduce noisy edges. 
         edged = cv.Canny(blurred, 100, 150) # Convert to Canny edge images (only edges are black, everything else is white). 
