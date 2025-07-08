@@ -73,7 +73,31 @@ class CameraStream:
             rgb = dict(zip(("Red", "Green", "Blue"), (r, g, b)))
             return max(rgb, key=rgb.get)
     
+    def detect_shapes(self): 
+        grayed = cv.cvtColor(self.img, cv.COLOR_BGR2GRAY)
+        blurred = cv.GaussianBlur(grayed, (5, 5), 0) # Gaussian kernel size. 
+        edged = cv.Canny(blurred, 100, 150) # Lower and upper Canny thresholds. 
+        contours, _ = cv.findContours(edged, cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+        shape = 'Unknown'
+        try: 
+            contour = max(contours, key=cv.contourArea)
+            perimeter = cv.arcLength(contour, True)
+            approximation = cv.approxPolyDP(contour, 0.02 * perimeter, True) # Second parameter is approximation accuracy.
+            vertices = len(approximation)
+            if vertices == 3: 
+                shape = "Triangle"
+            elif vertices == 4: 
+                shape = "Rectangle"
+            elif vertices >= 5: 
+                shape = "Circle"
+            cv.drawContours(self.img, [approximation], -1, (0, 255, 0), 2)
+            return shape
+        except: 
+            return shape
+        
 camera = CameraStream(port='COM4', baudrate=115200, rotation=0, use_webcam=False)
 while True: 
     camera.capture()
+    shape = camera.detect_shapes()
+    print(shape)
     camera.display()
