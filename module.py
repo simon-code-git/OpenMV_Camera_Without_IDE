@@ -1,5 +1,5 @@
 ### Created by Simon Wong while working at BLINC Lab. 
-### Updated June 13, 2025. 
+### Updated July 16, 2025. 
 
 import serial
 import struct
@@ -47,12 +47,12 @@ class CameraStream:
         cv.imshow('OpenMV H7 Camera', self.img) # Displays captured image. 
         cv.waitKey(1) # Necessary for OpenCV to update window. 
 
-    def dominant_colour(self, normalize_components=False, decimals=2, max_component=False): 
-    # Function for calculating the dominant colour of a frame. 
+    def dominant_colour(self, decimals=2,normalize_components=True, max_component=False): 
+    # Function for calculating the dominant colour of a frame using k-means clustering (not simple average).  
         data = self.img
-        data = data.reshape((-1, 3)).astype(np.float32)
-        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-        _, _, center = cv.kmeans(data, 1, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS)
+        data = data.reshape((-1, 3)).astype(np.float32) # Reshape from (height, width, colour) to (height x width, colour). 
+        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0) 
+        _, _, center = cv.kmeans(data, 1, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS) # K-means with single cluster. 
         center = center[0].astype(int)[::-1] # Reorder vector to RGB since OpenCV uses BGR. 
         r, g, b = center
         if not max_component: # Return a dictionary with RGB values. 
@@ -65,7 +65,7 @@ class CameraStream:
                 b = round(float(b / sum), decimals)
             rgb = dict(zip(("RED", "GREEN", "BLUE"), (r, g, b)))
             return rgb
-        if max_component: # Return the most prominent component (red, green, or blue). 
+        if max_component: # Return the most prominent component (red, green, or blue).
             rgb = dict(zip(("Red", "Green", "Blue"), (r, g, b)))
             return max(rgb, key=rgb.get)
     
@@ -91,11 +91,47 @@ class CameraStream:
                 cv.drawContours(self.img, [approximation], -1, (0, 255, 0), 2) # Draws shape outline onto captured image. 
             return shape
         except: 
-            return shape
+            return shape # Will return "Unknown" if there is an error. 
         
+    def object_colour(self, draw_on_img=True, decimals=2,normalize_components=True, max_component=False): 
+        grayed = cv.cvtColor(self.img, cv.COLOR_BGR2GRAY) # Convert to grayscale for Canny edge algorithm. 
+        blurred = cv.GaussianBlur(grayed, (5, 5), 0) # Use Gaussian blur to reduce noisy edges. 
+        edged = cv.Canny(blurred, 100, 150) # Convert to Canny edge images (only edges are black, everything else is white). 
+        contours, _ = cv.findContours(edged, cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE) # Finds boundaries from the black/white Canny image. 
+        b = g = r = 0
+        try: # Necessary because max() causes error if the contours list is empty. 
+            contour = max(contours, key=cv.contourArea) # Only look at the largest contour/shape seen by the camera. 
+            mask = np.zeros(self.img.shape[:2], dtype=np.uint8) # Create a mask for the contour. 
+            cv.drawContours(mask, [contour], -1, 255, -1)  # Filled contour. 
+            masked_pixels = self.img[mask == 255] 
+            reshaped_masked_pixels = masked_pixels.reshape((-1, 3)).astype(np.float32) # Reshape from (height, width, colour) to (height x width, colour). 
+            criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+            _, _, centers = cv.kmeans(reshaped_masked_pixels, 1, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS) # K-means with single cluster. 
+            center = centers[0].astype(int)[::-1] # Reorder vector to RGB since OpenCV uses BGR. 
+            r, g, b = center
+            if draw_on_img: # Draw outline of identified object, has to happen after mean calculation becauses outline affects colour. 
+                perimeter = cv.arcLength(contour, True) # Calculates the arc length perimeter of the shape. 
+                approximation = cv.approxPolyDP(contour, 0.02 * perimeter, True) # Approximates contour to polygon with less vertices. 
+                cv.drawContours(self.img, [approximation], -1, (0, 255, 0), 2) # Draws shape outline onto captured image. 
+            if not max_component: # Return a dictionary with RGB values. 
+                if normalize_components: # Normalizes based on fraction that each component (RGB) makes up of total colour. 
+                    sum = r + g + b
+                    if sum == 0: 
+                        return [0, 0, 0]
+                    r = round(float(r / sum), decimals)
+                    g = round(float(g / sum), decimals)
+                    b = round(float(b / sum), decimals)
+                rgb = dict(zip(("RED", "GREEN", "BLUE"), (r, g, b)))
+                return rgb
+            if max_component: # Return the most prominent component (red, green, or blue).
+                rgb = dict(zip(("Red", "Green", "Blue"), (r, g, b)))
+                return max(rgb, key=rgb.get)
+        except: 
+            return None 
+
 camera = CameraStream(port='COM4', baudrate=115200, rotation=0)
 while True: 
     camera.capture()
-    shape = camera.detect_shapes()
-    print(shape)
+    colour = camera.object_colour()
+    print(colour)
     camera.display()
