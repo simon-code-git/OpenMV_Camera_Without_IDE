@@ -65,8 +65,8 @@ class CameraStream:
                 b = round(float(b / sum), decimals)
             rgb = dict(zip(("RED", "GREEN", "BLUE"), (r, g, b)))
             return rgb
-        if max_component: # Return the most prominent component (red, green, or blue).
-            rgb = dict(zip(("Red", "Green", "Blue"), (r, g, b)))
+        if max_component: # Return the most prominent component (RED, GREEN, BLUE). s
+            rgb = dict(zip(("RED", "GREEN", "BLUE"), (r, g, b)))
             return max(rgb, key=rgb.get)
     
     def detect_shapes(self, draw_on_img=True): 
@@ -123,8 +123,8 @@ class CameraStream:
                     b = round(float(b / sum), decimals)
                 rgb = dict(zip(("RED", "GREEN", "BLUE"), (r, g, b)))
                 return rgb
-            if max_component: # Return the most prominent component (red, green, or blue).
-                rgb = dict(zip(("Red", "Green", "Blue"), (r, g, b)))
+            if max_component: # Return the most prominent component (RED, GREEN, BLUE). 
+                rgb = dict(zip(("REd", "GREEN", "BLUE"), (r, g, b)))
                 return max(rgb, key=rgb.get)
         except: 
             return None 
