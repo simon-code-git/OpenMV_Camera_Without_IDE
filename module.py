@@ -6,7 +6,7 @@ import struct
 import cv2 as cv
 import numpy as np
 
-class CameraStream: 
+class OpenMV_Camera: 
 # Everything is contained in a single class. 
     def __init__(self, port='COM4', baudrate=115200, rotation=0): # Initializes camera class. Make sure to specify COM port. 
         self.serial_port = serial.Serial(port, 
@@ -129,7 +129,7 @@ class CameraStream:
         except: 
             return None 
 
-camera = CameraStream(port='COM4', baudrate=115200, rotation=0)
+camera = OpenMV_Camera(port='COM4', baudrate=115200, rotation=0)
 while True: 
     camera.capture()
     colour = camera.object_colour()
