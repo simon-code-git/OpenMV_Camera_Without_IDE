@@ -1,5 +1,5 @@
 ### Created by Simon Wong while working at BLINC Lab. 
-### Updated July 16, 2025. 
+### Updated July 21, 2025. 
 
 import serial
 import struct
@@ -132,6 +132,6 @@ class OpenMV_Camera:
 camera = OpenMV_Camera(port='COM4', baudrate=115200, rotation=0)
 while True: 
     camera.capture()
-    colour = camera.object_colour()
-    print(colour)
+    print(camera.object_colour(draw_on_img=True))
+    print(camera.detect_shapes(draw_on_img=False))
     camera.display()
